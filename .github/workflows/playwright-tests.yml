@@ -1,7 +1,7 @@
 
 name: Playwright Tests
 
-on: # When the workflow should be executed?
+on:
   push:
   pull_request:
     branches:
@@ -16,8 +16,8 @@ on: # When the workflow should be executed?
 jobs:
   playwright-tests:
     if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
-    runs-on: ubuntu-latest # virtual machine (macos-latest, windows latest, ubuntu latest)
-    timeout-minutes: 60 # maximum timeout in minutes for the entire workflow to be completed.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     env:
       PRACTICE_USERNAME: ${{ secrets.PRACTICE_USERNAME }}
       PRACTICE_PASSWORD: ${{ secrets.PRACTICE_PASSWORD }}
@@ -39,7 +39,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests
-        run: npm test:headless
+        run: npm test
 
       - name: Upload Playwright report and test results
         if: always()
