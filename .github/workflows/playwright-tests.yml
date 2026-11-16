@@ -1,0 +1,53 @@
+
+name: Playwright Tests
+
+on: # When the workflow should be executed?
+  push:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+  # GitHub Actions schedules use UTC. 18:00 UTC is 12:00 noon CST (UTC-6).
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+jobs:
+  playwright-tests:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest # virtual machine (macos-latest, windows latest, ubuntu latest)
+    timeout-minutes: 60 # maximum timeout in minutes for the entire workflow to be completed.
+    env:
+      PRACTICE_USERNAME: ${{ secrets.PRACTICE_USERNAME }}
+      PRACTICE_PASSWORD: ${{ secrets.PRACTICE_PASSWORD }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npm test:headless
+
+      - name: Upload Playwright report and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-and-results
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 14
